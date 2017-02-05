@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>PI Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+          crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container">
+    <h1 class="display-4">PI Dashboard</h1>
+
+    <hr>
+
+    <h2>Rendszerinformáció</h2>
+
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="card card-outline-primary">
+                <div class="card-block">
+                    <h3 class="card-title">Uptime</h3>
+                    <p class="card-text">{{ system_vars['uptime'] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card card-outline-primary">
+                <div class="card-block">
+                    <h3 class="card-title">Terhelés</h3>
+                    <p class="card-text">{{ system_vars['load'] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card card-outline-primary">
+                <div class="card-block">
+                    <h3 class="card-title">Szabad memória</h3>
+                    <p class="card-text">{{ '%d' | format((system_vars['free_memory']/(1024*1024))) }}
+                        MB</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card card-outline-primary">
+                <div class="card-block">
+                    <h3 class="card-title">CPU</h3>
+                    <p class="card-text">{{ '%d' | format(system_vars['temp'] / 1000) }} &#8451;</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <h2>Hőmérséklet</h2>
+    <h4>Aktuális</h4>
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="card card-outline-primary">
+                <div class="card-block">
+                    <h3 class="card-title">Utca</h3>
+                    <p class="card-text">{{ temperature_vars['external'] }} &#8451;</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card card-outline-primary">
+                <div class="card-block">
+                    <h3 class="card-title">Szoba</h3>
+                    <p class="card-text">{{ temperature_vars['internal'] }} &#8451;</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <h4>Elmúlt 24 óra</h4>
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="chart_div" style="height: 500px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery first, then Tether, then Bootstrap JS. -->
+<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+        integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+        integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+        integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    google.load("visualization", "1", {packages: ["corechart"]});
+    google.setOnLoadCallback(drawChart);
+    function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Idő', 'Szoba'],
+            {{ temperature_vars['graph_data']|safe }}
+
+        ]);
+
+        var options = {
+            curveType: 'function',
+            hAxis: {
+                'textPosition': 'none'
+            },
+            vAxis: {
+                'title': 'Hőmérséklet'
+            }
+        };
+
+        var chart = new google.visualization.LineChart
+        (document.getElementById('chart_div'));
+        chart.draw(data, options);
+    }
+</script>
+</body>
+</html>
