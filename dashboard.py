@@ -9,7 +9,6 @@ from flask import Flask, render_template
 from openweatherconfig import config
 
 app = Flask(__name__)
-app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 
 def fetch_json(url):
@@ -125,4 +124,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run()
