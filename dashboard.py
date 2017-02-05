@@ -1,20 +1,16 @@
-import json
+import datetime
 import os
 import psutil
 import time
-import urllib2
 import sqlite3
 
 from flask import Flask, render_template
-from openweatherconfig import config
+from openweather import OpenWeather
 
 app = Flask(__name__)
 
-
-def fetch_json(url):
-    req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
-    return response.read()
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
 class System:
@@ -44,7 +40,7 @@ class System:
 
 class Temperature:
     _device = '/sys/bus/w1/devices/28-041663737dff/w1_slave'
-    _dbname = '/home/zolij/apps/rpi_temp_logger/templog.db'
+    _dbname = __location__ = '{0}/templog.db'.format(__location__)
 
     def __init__(self):
         pass
@@ -54,7 +50,7 @@ class Temperature:
 
         conn = sqlite3.connect(self._dbname)
         curs = conn.cursor()
-        curs.execute("SELECT * FROM temps WHERE timestamp>datetime('now','-%s hours')" % interval)
+        curs.execute("SELECT datetime(timestamp, 'localtime'), temp, temp_external FROM temps WHERE timestamp>datetime('now','-%s hours')" % interval)
         rows = curs.fetchall()
         conn.close()
         return rows
@@ -63,21 +59,18 @@ class Temperature:
         chart_table = ""
 
         for row in rows[:-1]:
-            rowstr = "['{0}', {1}],\n".format(str(row[0]), str(row[1]))
+            rowstr = "['{0}', {1}, {2}],\n".format(str(row[0])[10:16], str(row[1]), str(row[2]))
             chart_table += rowstr
 
         row = rows[-1]
-        rowstr = "['{0}', {1}]\n".format(str(row[0]), str(row[1]))
+        rowstr = "['{0}', {1}, {2}],\n".format(str(row[0])[10:16], str(row[1]), str(row[2]))
         chart_table += rowstr
 
         return chart_table
 
     def current_external(self):
-        sWeather = fetch_json("http://api.openweathermap.org/data/2.5/weather?q=" + config[
-            'location'] + "&units=metric&APPID=" + config['api'])
-        jWeather = json.loads(sWeather)
-        temp = jWeather['main']['temp']
-        return temp
+        ow = OpenWeather()
+        return ow.current()
 
     def current_internal(self):
         try:
@@ -96,7 +89,6 @@ class Temperature:
             tempvalue = float(tempstr) / 1000
             return tempvalue
         else:
-            print "Hiba"
             return None
 
     def graph_data(self):

@@ -82,7 +82,7 @@
     <h4>Elmúlt 24 óra</h4>
     <div class="row">
         <div class="col-sm-12">
-            <div id="chart_div" style="height: 500px;"></div>
+            <div id="chart_div" style="height: 800px;"></div>
         </div>
     </div>
 </div>
@@ -104,7 +104,7 @@
     google.setOnLoadCallback(drawChart);
     function drawChart() {
         var data = google.visualization.arrayToDataTable([
-            ['Idő', 'Szoba'],
+            ['Idő', 'Szoba', 'Utca'],
             {{ temperature_vars['graph_data']|safe }}
 
         ]);
@@ -112,7 +112,7 @@
         var options = {
             curveType: 'function',
             hAxis: {
-                'textPosition': 'none'
+
             },
             vAxis: {
                 'title': 'Hőmérséklet'
